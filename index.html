@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ ALL SYSTEMS CONNECTED — DLab</title>
+<style>
+  :root{
+    --bg:#05060f; --card:rgba(255,255,255,.04); --border:rgba(255,255,255,.09);
+    --ok:#3ddc84; --warn:#ffb020; --bad:#ff4d6d; --acc:#7c5cff; --acc2:#00e5ff;
+    --txt:#e8eaf6; --dim:#8a90b8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:var(--bg);color:var(--txt);font-family:'SF Pro Display','Segoe UI',system-ui,sans-serif;overflow-x:hidden}
+  /* animated bg */
+  .stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .glow{position:fixed;width:60vw;height:60vw;border-radius:50%;filter:blur(120px);opacity:.18;z-index:0;pointer-events:none;animation:drift 18s ease-in-out infinite alternate}
+  .glow.a{background:var(--acc);top:-20vw;left:-15vw}
+  .glow.b{background:var(--acc2);bottom:-25vw;right:-15vw;animation-delay:-9s}
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(8vw,6vh) scale(1.25)}}
+  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:48px 20px 80px}
+  /* header */
+  header{text-align:center;margin-bottom:14px}
+  .badge{display:inline-block;padding:6px 16px;border:1px solid var(--border);border-radius:99px;font-size:12px;letter-spacing:.25em;color:var(--dim);text-transform:uppercase;margin-bottom:22px;background:var(--card)}
+  h1{font-size:clamp(38px,7vw,76px);font-weight:800;line-height:1.03;letter-spacing:-.02em}
+  h1 .grad{background:linear-gradient(100deg,var(--acc) 0%,var(--acc2) 50%,var(--ok) 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+  @keyframes shine{to{background-position:200% center}}
+  .sub{color:var(--dim);margin-top:14px;font-size:17px}
+  .clock{font-variant-numeric:tabular-nums;font-size:13px;color:var(--acc2);margin-top:10px;letter-spacing:.1em}
+  /* score ring */
+  .score{display:flex;align-items:center;justify-content:center;gap:26px;margin:34px auto 40px;flex-wrap:wrap}
+  .ring{position:relative;width:130px;height:130px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring circle{fill:none;stroke-width:9}
+  .ring .track{stroke:rgba(255,255,255,.07)}
+  .ring .prog{stroke:url(#rg);stroke-linecap:round;stroke-dasharray:339.29;stroke-dashoffset:339.29;transition:stroke-dashoffset 1.6s cubic-bezier(.22,1,.36,1)}
+  .ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:34px}
+  .ring .num small{font-size:11px;font-weight:500;color:var(--dim);letter-spacing:.15em;text-transform:uppercase}
+  .scoreTxt{max-width:340px}
+  .scoreTxt b{font-size:20px;display:block;margin-bottom:6px}
+  .scoreTxt span{color:var(--dim);font-size:14px;line-height:1.5}
+  /* grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px 22px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1),border-color .3s;position:relative;overflow:hidden}
+  .card.show{opacity:1;transform:none}
+  .card:hover{border-color:rgba(124,92,255,.5)}
+  .card::before{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.05),transparent);transform:skewX(-20deg);transition:left .6s}
+  .card:hover::before{left:130%}
+  .top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:18px;background:linear-gradient(135deg,rgba(124,92,255,.25),rgba(0,229,255,.15));border:1px solid var(--border)}
+  .name{font-weight:700;font-size:15px}
+  .state{margin-left:auto;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:99px;display:flex;align-items:center;gap:6px}
+  .state .dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 1.6s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .st-ok{color:var(--ok);background:rgba(61,220,132,.1);border:1px solid rgba(61,220,132,.3)}
+  .st-bad{color:var(--bad);background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3)}
+  .st-warn{color:var(--warn);background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.3)}
+  .st-pend{color:var(--dim);background:rgba(255,255,255,.05);border:1px solid var(--border)}
+  .st-pend .dot{animation:none}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13px}
+  dt{color:var(--dim)}
+  dd{text-align:right;font-weight:600;word-break:break-word}
+  dd a{color:var(--acc2);text-decoration:none}
+  dd a:hover{text-decoration:underline}
+  .bar{height:5px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:12px}
+  .bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width 1s cubic-bezier(.22,1,.36,1)}
+  footer{margin-top:56px;text-align:center;color:var(--dim);font-size:13px}
+  footer b{color:var(--txt)}
+  .marq{overflow:hidden;border-block:1px solid var(--border);padding:10px 0;margin:36px 0 8px;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent);mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}
+  .marq span{display:inline-block;animation:marq 22s linear infinite;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+  @keyframes marq{to{transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="glow a"></div><div class="glow b"></div>
+<div class="wrap">
+<header>
+  <div class="badge">DLab · Deployment Check</div>
+  <h1><span class="grad">ВСЁ ПОДКЛЮЧЕНО</span></h1>
+  <p class="sub">Реальный diagnostic-стенд: каждая карточка получает данные из живых API прямо сейчас</p>
+  <div class="clock" id="clock"></div>
+</header>
+
+<div class="score">
+  <div class="ring">
+    <svg width="130" height="130" viewBox="0 0 130 130">
+      <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#7c5cff"/><stop offset=".5" stop-color="#00e5ff"/><stop offset="1" stop-color="#3ddc84"/>
+      </linearGradient></defs>
+      <circle class="track" cx="65" cy="65" r="54"/>
+      <circle class="prog" id="prog" cx="65" cy="65" r="54"/>
+    </svg>
+    <div class="num"><span id="scoreNum">0/0</span><small>connected</small></div>
+  </div>
+  <div class="scoreTxt">
+    <b id="verdict">Проверяю соединения…</b>
+    <span id="verdictSub">Каждый модуль ниже обращается к реальному источнику: сетевые ping, навигационные API, Device API, метрики рендера.</span>
+  </div>
+</div>
+
+<div class="grid" id="grid">
+
+  <div class="card" id="c-net">
+    <div class="top"><div class="ico">🌐</div><div class="name">Интернет</div><div class="state st-pend" id="s-net"><span class="dot"></span>проверка</div></div>
+    <dl><dt>Статус сети</dt><dd id="n-online">—</dd><dt>Тип соединения</dt><dd id="n-conn">—</dd><dt>Протокол</dt><dd id="n-proto">—</dd></dl>
+    <div class="bar"><i id="b-net"></i></div>
+  </div>
+
+  <div class="card" id="c-ping">
+    <div class="top"><div class="ico">📡</div><div class="name">Пинги до серверов</div><div class="state st-pend" id="s-ping"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>Cloudflare</dt><dd id="p-cf">—</dd><dt>GitHub API</dt><dd id="p-gh">—</dd><dt>Яндекс</dt><dd id="p-yx">—</dd></dl>
+    <div class="bar"><i id="b-ping"></i></div>
+  </div>
+
+  <div class="card" id="c-repo">
+    <div class="top"><div class="ico">📦</div><div class="name">Репозиторий</div><div class="state st-pend" id="s-repo"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>Владелец</dt><dd id="r-own">—</dd><dt>Репо</dt><dd id="r-name">—</dd><dt>Файлов в HEAD</dt><dd id="r-files">—</dd><dt>Последний коммит</dt><dd id="r-sha">—</dd></dl>
+    <div class="bar"><i id="b-repo"></i></div>
+  </div>
+
+  <div class="card" id="c-api">
+    <div class="top"><div class="ico">🔌</div><div class="name">GitHub API</div><div class="state st-pend" id="s-api"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>Доступен</dt><dd id="a-ok">—</dd><dt>Лимит запросов</dt><dd id="a-limit">—</dd><dt>Скорость ответа</dt><dd id="a-ms">—</dd></dl>
+    <div class="bar"><i id="b-api"></i></div>
+  </div>
+
+  <div class="card" id="c-page">
+    <div class="top"><div class="ico">🚀</div><div class="name">Эта страница</div><div class="state st-pend" id="s-page"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>Адрес</dt><dd id="g-url">—</dd><dt>Откуда загружена</dt><dd id="g-from">—</dd><dt>Загрузка документа</dt><dd id="g-load">—</dd><dt>HTML весит</dt><dd id="g-size">—</dd></dl>
+    <div class="bar"><i id="b-page"></i></div>
+  </div>
+
+  <div class="card" id="c-device">
+    <div class="top"><div class="ico">💻</div><div class="name">Устройство</div><div class="state st-pend" id="s-device"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>Платформа</dt><dd id="d-os">—</dd><dt>Ядер CPU</dt><dd id="d-cpu">—</dd><dt>ОЗУ (браузеру)</dt><dd id="d-ram">—</dd><dt>Батарея</dt><dd id="d-bat">—</dd></dl>
+    <div class="bar"><i id="b-device"></i></div>
+  </div>
+
+  <div class="card" id="c-screen">
+    <div class="top"><div class="ico">🖥️</div><div class="name">Экран и рендер</div><div class="state st-pend" id="s-screen"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>Разрешение</dt><dd id="e-res">—</dd><dt>Pixel ratio</dt><dd id="e-dpr">—</dd><dt>FPS сейчас</dt><dd id="e-fps">—</dd><dt>WebGL</dt><dd id="e-gl">—</dd></dl>
+    <div class="bar"><i id="b-screen"></i></div>
+  </div>
+
+  <div class="card" id="c-lang">
+    <div class="top"><div class="ico">🧭</div><div class="name">Локаль и время</div><div class="state st-pend" id="s-lang"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>Язык</dt><dd id="l-lang">—</dd><dt>Часовой пояс</dt><dd id="l-tz">—</dd><dt>UTC-смещение</dt><dd id="l-off">—</dd><dt>Домен по умолчанию</dt><dd id="l-host">—</dd></dl>
+    <div class="bar"><i id="b-lang"></i></div>
+  </div>
+
+  <div class="card" id="c-geo">
+    <div class="top"><div class="ico">🛰️</div><div class="name">Внешний IP и гео</div><div class="state st-pend" id="s-geo"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>IP</dt><dd id="x-ip">—</dd><dt>Провайдер</dt><dd id="x-org">—</dd><dt>Страна / город</dt><dd id="x-geo">—</dd></dl>
+    <div class="bar"><i id="b-geo"></i></div>
+  </div>
+
+  <div class="card" id="c-sec">
+    <div class="top"><div class="ico">🔐</div><div class="name">Безопасность</div><div class="state st-pend" id="s-sec"><span class="dot"></span>ждёт</div></div>
+    <dl><dt>HTTPS</dt><dd id="q-tls">—</dd><dt>Cookies доступ</dt><dd id="q-coo">—</dd><dt>Service Workers</dt><dd id="q-sw">—</dd><dt>Push-уведомления</dt><dd id="q-push">—</dd></dl>
+    <div class="bar"><i id="b-sec"></i></div>
+  </div>
+
+</div>
+
+<div class="marq"><span id="marq"></span></div>
+
+<footer>Собрано для <b>DLab</b> · <span id="year"></span> · обновлено: <span id="ago"></span></footer>
+</div>
+
+<script>
+/* ===== helpers ===== */
+const $=id=>document.getElementById(id);
+const results={};
+function set(id,ok,cls){$(id).className='state st-'+(cls||(ok?'ok':'bad'));$(id).innerHTML='<span class="dot"></span>'+(ok?'online':(cls==='warn'?'partial':'offline'));}
+function done(k,v){results[k]=v;const total=Object.keys(results).length,okCount=Object.values(results).filter(x=>x===true).length;
+  $('scoreNum').textContent=okCount+'/'+total;
+  $('prog').style.strokeDashoffset=339.29*(1-okCount/10);
+  $('verdict').textContent=okCount===total?'Все системы подключены ✨':`${okCount} из ${total} каналов активны`;}
+function fill(id,txt){$(id).textContent=txt;}
+const t0=performance.now();
+async function timed(url,opts){const s=performance.now();try{await fetch(url,opts);return Math.round(performance.now()-s);}catch(e){return -1;}}
+
+/* ===== stars ===== */
+(()=>{const c=document.createElement('canvas');c.width=innerWidth;c.height=innerHeight;document.getElementById('stars').appendChild(c);
+const x=c.getContext('2d');const st=Array.from({length:140},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.2,v:Math.random()*.2+.05,t:Math.random()*6}));
+(function draw(){x.clearRect(0,0,c.width,c.height);for(const s of st){s.t+=.02;s.y-=s.v;if(s.y<0)s.y=c.height;x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fillStyle=`rgba(160,170,255,${.25+Math.sin(s.t)*.2})`;x.fill();}requestAnimationFrame(draw);})();})();
+
+/* ===== 1 internet ===== */
+(async()=>{
+  const online=navigator.onLine;
+  fill('n-online',online?'онлайн':'ОФФЛАЙН');
+  const nc=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  fill('n-conn',nc?`${nc.effectiveType||'?'} · downlink ${nc.downlink||'?'} Мбит/с · rtt ${nc.rtt||'?'} мс`:'н/д');
+  fill('n-proto',location.protocol);
+  set('s-net',online);done('net',online);$('b-net').style.width=online?'100%':'20%';
+})();
+
+/* ===== 2 pings (no-cors fetch → just measures if reachable) ===== */
+(async()=>{
+  const targets=[['p-cf','https://1.1.1.1/cdn-cgi/trace'],['p-gh','https://api.github.com/zen'],['p-yx','https://yandex.ru']];
+  let ok=0;for(const [id,url] of targets){const ms=await timed(url,{mode:'no-cors',cache:'no-store'});fill(id,ms<0?'недоступен':ms+' мс');if(ms>0)ok++;}
+  set('s-ping',ok===3,ok?'ok':'warn');done('ping',ok===3);$('b-ping').style.width=(ok/3*100)+'%';
+})();
+
+/* ===== 3 repo via GitHub API (works for public repos) ===== */
+(async()=>{
+  const isPages=location.hostname.endsWith('github.io');
+  const user=isPages?location.hostname.split('.')[0]:'YumDaniil';
+  const repo=isPages?location.pathname.replace(/^\//,'').split('/')[0]:'test-site';
+  fill('r-own',user);fill('r-name',repo||'—');
+  try{
+    const t=performance.now();
+    const r=await fetch(`https://api.github.com/repos/${user}/${repo}`);
+    if(!r.ok)throw 0;const j=await r.json();
+    const c=await fetch(`https://api.github.com/repos/${user}/${repo}/git/trees/${j.default_branch}?recursive=1`);
+    const tj=await c.json();
+    fill('r-files',(tj.tree||[]).filter(f=>f.type==='blob').length);
+    fill('r-sha',(j.commit?j.commit.sha:'').slice(0,7)+' · '+new Date(j.pushed_at||Date.now()).toLocaleDateString('ru-RU'));
+    set('s-repo',true);done('repo',true);$('b-repo').style.width='100%';
+  }catch(e){fill('r-files','приватный или не найден');set('s-repo',false,'warn');done('repo',false);$('b-repo').style.width='40%';}
+})();
+
+/* ===== 4 GitHub API meta ===== */
+(async()=>{
+  try{const ms=await timed('https://api.github.com/meta');const r=await fetch('https://api.github.com/rate_limit');const j=await r.json();
+    fill('a-ok','да ('+ms+' мс)');fill('a-limit',j.resources.core.remaining+'/'+j.resources.core.limit+' на этот IP');fill('a-ms',ms+' мс');
+    set('s-api',true);done('api',true);$('b-api').style.width='100%';
+  }catch(e){fill('a-ok','недоступен из сети пользователя');set('s-api',false,'warn');done('api',false);$('b-api').style.width='30%';}
+})();
+
+/* ===== 5 this page ===== */
+(()=>{
+  fill('g-url',location.href.length>60?location.href.slice(0,60)+'…':location.href);
+  fill('g-from',location.protocol==='file:'?'локальный файл (файл в Загрузках)':location.hostname);
+  const n=performance.getEntriesByType('navigation')[0];
+  fill('g-load',n?Math.round(n.domContentLoadedEventEnd-n.startTime)+' мс':'—');
+  fetch(location.href,{cache:'no-store'}).then(r=>r.blob()).then(b=>fill('g-size',(b.size/1024).toFixed(1)+' КБ')).catch(()=>fill('g-size','—'));
+  set('s-page',true);done('page',true);$('b-page').style.width='100%';
+})();
+
+/* ===== 6 device ===== */
+(async()=>{
+  fill('d-os',(navigator.userAgentData? (await navigator.userAgentData.getHighEntropyValues(['platform','platformVersion'])).platform+' '+(await navigator.userAgentData.getHighEntropyValues(['platformVersion'])).platformVersion:navigator.platform)||'—');
+  fill('d-cpu',navigator.hardwareConcurrency+' потоков');
+  fill('d-ram',(navigator.deviceMemory?navigator.deviceMemory+' ГБ':'скрыто браузером'));
+  try{if(navigator.getBattery){const b=await navigator.getBattery();fill('d-bat',Math.round(b.level*100)+'% · '+(b.charging?'зарядка':'от батареи'));}else fill('d-bat','н/д');}catch(e){fill('d-bat','н/д');}
+  set('s-device',true);done('device',true);$('b-device').style.width='100%';
+})();
+
+/* ===== 7 screen + fps ===== */
+(()=>{
+  fill('e-res',screen.width+'×'+screen.height+' · окно '+innerWidth+'×'+innerHeight);
+  fill('e-dpr',devicePixelRatio+'x');
+  try{const c=document.createElement('canvas');const gl=c.getContext('webgl2')||c.getContext('webgl');
+    fill('e-gl',gl?'поддерживается':'нет');}catch(e){fill('e-gl','нет');}
+  let f=0,last=performance.now();
+  (function count(){f++;const now=performance.now();if(now-last>=1000){fill('e-fps',Math.round(f*1000/(now-last))+' fps');f=0;last=now;}requestAnimationFrame(count);})();
+  set('s-screen',true);done('screen',true);$('b-screen').style.width='100%';
+})();
+
+/* ===== 8 locale ===== */
+(()=>{
+  fill('l-lang',navigator.languages.join(', '));
+  fill('l-tz',Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const off=-new Date().getTimezoneOffset()/60;
+  fill('l-off','UTC'+(off>=0?'+':'')+off);
+  fetch('https://ipapi.co/json/').then(r=>r.json()).then(j=>fill('l-host',(j.country_name||'?'))).catch(()=>fill('l-host','—'));
+  set('s-lang',true);done('lang',true);$('b-lang').style.width='100%';
+})();
+
+/* ===== 9 geo (two fallback providers) ===== */
+(async()=>{
+  const prov=[ 'https://ipapi.co/json/','https://ipwho.is/' ];
+  for(const u of prov){try{const r=await fetch(u);const j=await r.json();if(!j.ip)continue;
+    fill('x-ip',j.ip);fill('x-org',(j.org||j.connection?._? '':'')+(j.org?j.org.slice(0,28):j.connection?.provider||'—'));
+    fill('x-geo',(j.country_name||j.country||'—')+' · '+(j.city||'—'));set('s-geo',true);done('geo',true);$('b-geo').style.width='100%';return;}catch(e){}}
+  fill('x-ip','скрыт браузером/провайдером');set('s-geo',false,'warn');done('geo',false);$('b-geo').style.width='50%';
+})();
+
+/* ===== 10 security ===== */
+(async()=>{
+  fill('q-tls',location.protocol==='https:'?'✓ защищён':(location.protocol==='file:'?'нет (локальный файл)':'✗ открыто'));
+  fill('q-coo',navigator.cookieEnabled?'включены':'выключены');
+  fill('q-sw',('serviceWorker' in navigator)?'доступны':'нет');
+  try{fill('q-push',('Notification' in window)?Notification.permission:'нет API');}catch(e){fill('q-push','—');}
+  const good=location.protocol==='https:';
+  set('s-sec',good,'warn');done('sec',good);$('b-sec').style.width=good?'100%':'70%';
+})();
+
+/* ===== reveal on scroll + ticker + clock ===== */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('show');io.unobserve(e.target);}}),{threshold:.15});
+document.querySelectorAll('.card').forEach((c,i)=>{setTimeout(()=>c.classList.add('show'),150+i*90);io.observe(c);});
+const items=['INTERNET','ПИНГИ','РЕПОЗИТОРИЙ','GITHUB API','СТРАНИЦА','УСТРОЙСТВО','ЭКРАН','LOCAL','GEO','TLS'];
+$('marq').textContent=(items.join(' ✦ ')+' ✦ ').repeat(4);
+setInterval(()=>{$('clock').textContent=new Date().toLocaleString('ru-RU',{weekday:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'});},1000);
+$('clock').textContent=new Date().toLocaleString('ru-RU',{weekday:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+$('year').textContent=new Date().getFullYear();$('ago').textContent='сейчас';
+</script>
+</body>
+</html>
